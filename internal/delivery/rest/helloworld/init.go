@@ -1,10 +1,10 @@
 package helloworld
 
 import (
-	"main/internal/delivery/rest"
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/soerjadi/stockist/internal/delivery/rest"
 )
 
 func NewHandler() rest.API {

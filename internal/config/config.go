@@ -3,8 +3,7 @@ package config
 import (
 	"os"
 
-	"main/internal/pkg/util"
-
+	"github.com/soerjadi/stockist/internal/pkg/util"
 	"gopkg.in/gcfg.v1"
 )
 

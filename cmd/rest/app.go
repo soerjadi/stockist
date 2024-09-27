@@ -3,9 +3,6 @@ package main
 import (
 	"context"
 	"fmt"
-	"main/internal/config"
-	"main/internal/delivery/rest"
-	helloHandler "main/internal/delivery/rest/helloworld"
 	"net/http"
 	"os"
 	"os/signal"
@@ -14,6 +11,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/soerjadi/stockist/internal/config"
+	"github.com/soerjadi/stockist/internal/delivery/rest"
+	helloHandler "github.com/soerjadi/stockist/internal/delivery/rest/helloworld"
 )
 
 func main() {
