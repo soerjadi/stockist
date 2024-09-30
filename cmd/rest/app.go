@@ -8,13 +8,17 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-playground/validator/v10"
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 	"github.com/soerjadi/stockist/internal/config"
 	"github.com/soerjadi/stockist/internal/delivery/rest"
+	userHndl "github.com/soerjadi/stockist/internal/delivery/rest/user"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
+	"github.com/soerjadi/stockist/internal/repository/user"
+	userUcs "github.com/soerjadi/stockist/internal/usecase/user"
 )
 
 func main() {
@@ -100,6 +104,21 @@ func main() {
 }
 
 func initiateHandler(cfg *config.Config, db *sqlx.DB) ([]rest.API, error) {
+	validate := validator.New()
 
-	return []rest.API{}, nil
+	userRepository, err := user.GetRepository(db)
+	if err != nil {
+		log.Errorw("[initiateHandler] failed initiate userRepository", logger.KV{
+			"err": err,
+		})
+		return nil, err
+	}
+
+	userUsecase := userUcs.GetUsecase(userRepository, validate)
+
+	userHandler := userHndl.NewHandler(userUsecase)
+
+	return []rest.API{
+		userHandler,
+	}, nil
 }
