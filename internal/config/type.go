@@ -13,6 +13,8 @@ type Server struct {
 	Port        string
 	WaitTimeout int
 	BaseURL     string
+	Name        string
+	LogPath     string
 }
 
 type DatabaseConfig struct {
