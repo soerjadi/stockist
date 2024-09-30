@@ -13,7 +13,6 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/soerjadi/stockist/internal/config"
 	"github.com/soerjadi/stockist/internal/delivery/rest"
-	helloHandler "github.com/soerjadi/stockist/internal/delivery/rest/helloworld"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
 )
@@ -102,9 +101,5 @@ func main() {
 
 func initiateHandler(cfg *config.Config, db *sqlx.DB) ([]rest.API, error) {
 
-	handler := helloHandler.NewHandler()
-
-	return []rest.API{
-		handler,
-	}, nil
+	return []rest.API{}, nil
 }
