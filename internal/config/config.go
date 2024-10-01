@@ -8,7 +8,7 @@ import (
 )
 
 var configFilePaths = map[string]string{
-	"PRODUCTION":  "/etc/backend-skeleton/config.ini",
+	"PRODUCTION":  "/etc/stockist/config.ini",
 	"DEVELOPMENT": "../../files/config.ini",
 }
 
