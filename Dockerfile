@@ -1,4 +1,4 @@
-FROM golang:1.18.2-alpine3.15 AS builder
+FROM golang:1.23-alpine3.20 AS builder
 
 # Build
 COPY . /src/app
@@ -16,15 +16,15 @@ RUN mkdir -p /src/app/bin && \
   mkdir -p /var/log/stockist && \
   mkdir -p /etc/stockist
   
-RUN  mkdir supervisor-src && \
-  cd supervisor-src && \
-  git clone https://github.com/ochinchina/supervisord.git . && \
-  go generate && \
-  GOOS=linux go build -tags release -a -ldflags "-linkmode external -extldflags -static" -o /src/app/bin/supervisord
+# RUN  mkdir supervisor-src && \
+#   cd supervisor-src && \
+#   git clone https://github.com/ochinchina/supervisord.git . && \
+#   go generate && \
+#   GOOS=linux go build -tags release -a -ldflags "-linkmode external -extldflags -static" -o /src/app/bin/supervisord
 
-ARG SUPERVISOR_CONF
+# ARG SUPERVISOR_CONF
 
-COPY ./script/${SUPERVISOR_CONF} /src/app/conf/supervisor.conf
+# COPY ./script/${SUPERVISOR_CONF} /src/app/conf/supervisor.conf
 
 COPY ./files/config.development.ini /etc/stockist/config.ini
 
@@ -39,12 +39,13 @@ RUN cd cmd/rest && \
 # Serve
 FROM busybox
 
+RUN mkdir -p /etc/stockist/
+
 COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=builder /src/app/bin/supervisord /usr/bin/supervisord
-COPY --from=builder /src/app/conf/supervisor.conf /etc/supervisor.conf
 COPY --from=builder /src/app/bin/stockist /usr/app/stockist
 COPY --from=builder /etc/stockist/config.ini /etc/stockist/config.ini
 
-RUN mkdir -p /var/log/stockist
 
-CMD [ "supervisord -c /etc/supervisor.conf" ]
+RUN ls /usr/app/
+
+CMD [ "/usr/app/stockist" ]

@@ -19,3 +19,13 @@ $ go mod tidy && go mod vendor
 $ cd cmd/rest && go run app.go
 ```
 
+### how to run in docker
+- please adjust database and redis configuration in config.development.ini
+- run docker build
+```
+$ docker build --tag=stockist:1.0.0 .
+```
+- after docker build finished. run docker image
+```
+$ docker run -e ENV=PRODUCTION stockist:1.0.0
+```
