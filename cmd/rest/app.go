@@ -14,12 +14,15 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/soerjadi/stockist/internal/config"
 	"github.com/soerjadi/stockist/internal/delivery/rest"
+	pdtHndl "github.com/soerjadi/stockist/internal/delivery/rest/product"
 	strHndl "github.com/soerjadi/stockist/internal/delivery/rest/store"
 	userHndl "github.com/soerjadi/stockist/internal/delivery/rest/user"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
+	"github.com/soerjadi/stockist/internal/repository/product"
 	"github.com/soerjadi/stockist/internal/repository/store"
 	"github.com/soerjadi/stockist/internal/repository/user"
+	pdtUcs "github.com/soerjadi/stockist/internal/usecase/product"
 	strUcs "github.com/soerjadi/stockist/internal/usecase/store"
 	userUcs "github.com/soerjadi/stockist/internal/usecase/user"
 )
@@ -117,15 +120,31 @@ func initiateHandler(cfg *config.Config, db *sqlx.DB) ([]rest.API, error) {
 		return nil, err
 	}
 	storeRepository, err := store.GetRepository(db)
+	if err != nil {
+		log.Errorw("[initiateHandler] failed initiate store repository", logger.KV{
+			"err": err,
+		})
+		return nil, err
+	}
+	productRepository, err := product.GetRepository(db)
+	if err != nil {
+		log.Errorw("[initiateHandler] failed initiate product repository", logger.KV{
+			"err": err,
+		})
+		return nil, err
+	}
 
 	userUsecase := userUcs.GetUsecase(userRepository, cfg)
 	storeUsecase := strUcs.GetUsecase(storeRepository)
+	productUsecase := pdtUcs.GetUsecase(productRepository)
 
 	userHandler := userHndl.NewHandler(userUsecase, validate)
 	storeHandler := strHndl.NewHandler(storeUsecase, userUsecase, validate, cfg)
+	productHandler := pdtHndl.NewHandler(productUsecase, userUsecase, storeUsecase, validate, cfg)
 
 	return []rest.API{
 		userHandler,
 		storeHandler,
+		productHandler,
 	}, nil
 }
