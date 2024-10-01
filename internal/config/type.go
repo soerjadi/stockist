@@ -7,6 +7,7 @@ var cfg *Config
 type Config struct {
 	Server   Server
 	Database DatabaseConfig
+	Secret   Secret
 }
 
 type Server struct {
@@ -15,6 +16,10 @@ type Server struct {
 	BaseURL     string
 	Name        string
 	LogPath     string
+}
+
+type Secret struct {
+	Token string
 }
 
 type DatabaseConfig struct {
