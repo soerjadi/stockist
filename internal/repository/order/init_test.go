@@ -1,4 +1,4 @@
-package product
+package order
 
 import (
 	"database/sql"
@@ -10,82 +10,50 @@ import (
 )
 
 type prepareQueryMock struct {
-	getByID       *sqlmock.ExpectedPrepare
-	getList       *sqlmock.ExpectedPrepare
-	createProduct *sqlmock.ExpectedPrepare
-	updateStock   *sqlmock.ExpectedPrepare
+	createOrder       *sqlmock.ExpectedPrepare
+	createOrderItem   *sqlmock.ExpectedPrepare
+	updateOrderStatus *sqlmock.ExpectedPrepare
 }
 
 func expectPrepareMock(mock sqlmock.Sqlmock) prepareQueryMock {
 	prepareQuery := prepareQueryMock{}
 
-	prepareQuery.getByID = mock.ExpectPrepare(`
-	SELECT
-		id,
-		name,
-		description,
-		weight,
-		price,
+	prepareQuery.createOrder = mock.ExpectPrepare(`
+	INSERT INTO orders \(
+		user_id,
 		store_id,
-		stock,
-		images
-	FROM 
-		products
-	WHERE 
-		id = (.*)
+		status
+	\) VALUES \(
+		(.*),
+		(.*),
+		(.*)
+	\) RETURNING 
+	 	id,
+		user_id,
+		store_id,
+		status,
+		created_at
 	`)
 
-	prepareQuery.getList = mock.ExpectPrepare(`
-	SELECT
-		id,
-		name,
-		description,
-		weight,
-		price,
-		store_id,
-		stock,
-		images
-	FROM
-		products
-	ORDER BY id DESC
-	LIMIT (.*)
-	OFFSET (.*)
-	`)
-
-	prepareQuery.createProduct = mock.ExpectPrepare(`
-	INSERT INTO products \(
-		name,
-		description,
-		weight,
-		price,
-		store_id,
-		stock,
-		images
+	prepareQuery.createOrderItem = mock.ExpectPrepare(`
+	INSERT INTO order_item \(
+		order_id,
+		product_id,
+		amount,
+		price
 	\) VALUES \(
 		(.*),
 		(.*),
 		(.*),
-		(.*),
-		(.*),
-		(.*),
-		(.*)
-	\) RETURNING
-	 	id,
-		name,
-		description,
-		weight,
-		price,
-		store_id,
-		stock,
-		images,
-		created_at
+		(.*) 
+	\)
 	`)
 
-	prepareQuery.updateStock = mock.ExpectPrepare(`
+	prepareQuery.updateOrderStatus = mock.ExpectPrepare(`
 	UPDATE 
-		products
+		orders 
 	SET
-		stock = (.*)
+		status = (.*)
 	WHERE 
 		id = (.*)
 	`)
@@ -112,7 +80,7 @@ func TestGetRepository(t *testing.T) {
 			want: func(db *sqlx.DB) Repository {
 				q, _ := prepareQueries(db)
 
-				return &productRepository{
+				return &orderRepository{
 					query: q,
 				}
 			},

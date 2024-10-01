@@ -38,9 +38,4 @@ func (h *Handler) RegisterRoutes(r *mux.Router) {
 	productHandler.HandleFunc("/{id:[0-9]+}", rest.HandlerFunc(h.getByID).Serve).Methods(http.MethodGet)
 	productHandler.HandleFunc("/list", rest.HandlerFunc(h.getList).Serve).Methods(http.MethodGet)
 	productHandler.HandleFunc("", rest.HandlerFunc(h.CreateProduct).Serve).Methods(http.MethodPost)
-
-	// productStoreHandler := r.PathPrefix("/store/{store:[0-9]+}").Subrouter()
-	// productStoreHandler.Use(mux.CORSMethodMiddleware(r))
-	// productStoreHandler.Use(middleware.OnlyLoggedInUser(h.userUsecase, h.config))
-
 }

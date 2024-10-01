@@ -11,6 +11,7 @@ type Repository interface {
 	GetByID(ctx context.Context, id int64) (model.Product, error)
 	GetList(ctx context.Context, offset, limit int64) ([]model.Product, error)
 	CreateProduct(ctx context.Context, req model.CreateProductRequest) (model.Product, error)
+	UpdateStock(ctx context.Context, productID, stock int64) error
 }
 
 type productRepository struct {

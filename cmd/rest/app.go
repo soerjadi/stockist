@@ -12,16 +12,20 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/redis/go-redis/v9"
 	"github.com/soerjadi/stockist/internal/config"
 	"github.com/soerjadi/stockist/internal/delivery/rest"
+	ordHdl "github.com/soerjadi/stockist/internal/delivery/rest/order"
 	pdtHndl "github.com/soerjadi/stockist/internal/delivery/rest/product"
 	strHndl "github.com/soerjadi/stockist/internal/delivery/rest/store"
 	userHndl "github.com/soerjadi/stockist/internal/delivery/rest/user"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
+	"github.com/soerjadi/stockist/internal/repository/order"
 	"github.com/soerjadi/stockist/internal/repository/product"
 	"github.com/soerjadi/stockist/internal/repository/store"
 	"github.com/soerjadi/stockist/internal/repository/user"
+	ordUcs "github.com/soerjadi/stockist/internal/usecase/order"
 	pdtUcs "github.com/soerjadi/stockist/internal/usecase/product"
 	strUcs "github.com/soerjadi/stockist/internal/usecase/store"
 	userUcs "github.com/soerjadi/stockist/internal/usecase/user"
@@ -56,7 +60,17 @@ func main() {
 		return
 	}
 
-	handlers, err := initiateHandler(cfg, db)
+	redisClient := redis.NewClient(&redis.Options{
+		Addr:     cfg.Redis.URL,
+		Password: cfg.Redis.URL,
+	})
+
+	log.Infof("initialize redis %v", redisClient)
+
+	defer redisClient.Close()
+
+	handlers, err := initiateHandler(cfg, db, redisClient)
+	log.Info("sanoetuaosenut")
 	if err != nil {
 		log.Errorw("unable to initiate handler.", logger.KV{
 			"err": err,
@@ -109,7 +123,7 @@ func main() {
 	os.Exit(0)
 }
 
-func initiateHandler(cfg *config.Config, db *sqlx.DB) ([]rest.API, error) {
+func initiateHandler(cfg *config.Config, db *sqlx.DB, redis *redis.Client) ([]rest.API, error) {
 	validate := validator.New()
 
 	userRepository, err := user.GetRepository(db)
@@ -133,18 +147,28 @@ func initiateHandler(cfg *config.Config, db *sqlx.DB) ([]rest.API, error) {
 		})
 		return nil, err
 	}
+	orderRepository, err := order.GetRepository(db)
+	if err != nil {
+		log.Errorw("[initiateHandler] failed initiate order repository", logger.KV{
+			"err": err,
+		})
+		return nil, err
+	}
 
 	userUsecase := userUcs.GetUsecase(userRepository, cfg)
 	storeUsecase := strUcs.GetUsecase(storeRepository)
 	productUsecase := pdtUcs.GetUsecase(productRepository)
+	orderUsecase := ordUcs.GetUsecase(orderRepository, productRepository, redis)
 
 	userHandler := userHndl.NewHandler(userUsecase, validate)
 	storeHandler := strHndl.NewHandler(storeUsecase, userUsecase, validate, cfg)
 	productHandler := pdtHndl.NewHandler(productUsecase, userUsecase, storeUsecase, validate, cfg)
+	orderHandler := ordHdl.NewHandler(orderUsecase, userUsecase, cfg)
 
 	return []rest.API{
 		userHandler,
 		storeHandler,
 		productHandler,
+		orderHandler,
 	}, nil
 }

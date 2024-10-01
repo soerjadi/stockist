@@ -63,3 +63,20 @@ func (r productRepository) CreateProduct(ctx context.Context, req model.CreatePr
 
 	return product, nil
 }
+
+func (r productRepository) UpdateStock(ctx context.Context, productID, stock int64) error {
+	if _, err := r.query.updateStock.ExecContext(
+		ctx,
+		stock,
+		productID,
+	); err != nil {
+		log.Errorw("[repository.product.UpdateStock] fail update stock", logger.KV{
+			"err": err,
+			"id":  productID,
+		})
+
+		return err
+	}
+
+	return nil
+}
