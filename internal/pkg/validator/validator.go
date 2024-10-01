@@ -3,6 +3,7 @@ package validator
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -18,6 +19,8 @@ func Validate(ctx context.Context, validate *validator.Validate, req request) (e
 		if !ok {
 			return
 		}
+
+		fmt.Println(validationErr)
 
 		if len(validationErr) > 0 {
 			fieldError := validationErr[0]

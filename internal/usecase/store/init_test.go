@@ -1,17 +1,15 @@
-package user
+package store
 
 import (
 	"reflect"
 	"testing"
 
-	"github.com/soerjadi/stockist/internal/config"
-	"github.com/soerjadi/stockist/internal/repository/user"
+	"github.com/soerjadi/stockist/internal/repository/store"
 )
 
 func TestGetUsecase(t *testing.T) {
 	type args struct {
-		repository user.Repository
-		config     *config.Config
+		repository store.Repository
 	}
 	tests := []struct {
 		name string
@@ -20,13 +18,13 @@ func TestGetUsecase(t *testing.T) {
 	}{
 		{
 			name: "soerja",
-			want: &userUsecase{},
+			want: &storeUsecase{},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GetUsecase(tt.args.repository, tt.args.config); !reflect.DeepEqual(got, tt.want) {
+			if got := GetUsecase(tt.args.repository); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetUsecase() = %v, want %v", got, tt.want)
 			}
 		})

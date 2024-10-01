@@ -7,9 +7,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-var TOKEN_SECRET = ""
-
-func GenerateAccessToken(userID int64) (string, error) {
+func GenerateAccessToken(userID int64, tokenSecret string) (string, error) {
 	tokenClaims := jwt.RegisteredClaims{
 		Subject:   strconv.FormatInt(userID, 10),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 15)),
@@ -17,10 +15,10 @@ func GenerateAccessToken(userID int64) (string, error) {
 
 	accessTokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, tokenClaims)
 
-	return accessTokenClaims.SignedString([]byte(TOKEN_SECRET))
+	return accessTokenClaims.SignedString([]byte(tokenSecret))
 }
 
-func GenerateRefreshToken(userID int64) (string, error) {
+func GenerateRefreshToken(userID int64, tokenSecret string) (string, error) {
 	refreshClaims := jwt.RegisteredClaims{
 		Subject:   strconv.FormatInt(userID, 10),
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 48)),
@@ -28,5 +26,5 @@ func GenerateRefreshToken(userID int64) (string, error) {
 
 	refreshTokenClaims := jwt.NewWithClaims(jwt.SigningMethodHS256, refreshClaims)
 
-	return refreshTokenClaims.SignedString([]byte(TOKEN_SECRET))
+	return refreshTokenClaims.SignedString([]byte(tokenSecret))
 }

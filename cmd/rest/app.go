@@ -14,10 +14,13 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/soerjadi/stockist/internal/config"
 	"github.com/soerjadi/stockist/internal/delivery/rest"
+	strHndl "github.com/soerjadi/stockist/internal/delivery/rest/store"
 	userHndl "github.com/soerjadi/stockist/internal/delivery/rest/user"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
+	"github.com/soerjadi/stockist/internal/repository/store"
 	"github.com/soerjadi/stockist/internal/repository/user"
+	strUcs "github.com/soerjadi/stockist/internal/usecase/store"
 	userUcs "github.com/soerjadi/stockist/internal/usecase/user"
 )
 
@@ -113,12 +116,16 @@ func initiateHandler(cfg *config.Config, db *sqlx.DB) ([]rest.API, error) {
 		})
 		return nil, err
 	}
+	storeRepository, err := store.GetRepository(db)
 
-	userUsecase := userUcs.GetUsecase(userRepository, validate)
+	userUsecase := userUcs.GetUsecase(userRepository, cfg)
+	storeUsecase := strUcs.GetUsecase(storeRepository)
 
-	userHandler := userHndl.NewHandler(userUsecase)
+	userHandler := userHndl.NewHandler(userUsecase, validate)
+	storeHandler := strHndl.NewHandler(storeUsecase, userUsecase, validate, cfg)
 
 	return []rest.API{
 		userHandler,
+		storeHandler,
 	}, nil
 }

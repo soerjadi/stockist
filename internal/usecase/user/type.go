@@ -3,7 +3,7 @@ package user
 import (
 	"context"
 
-	"github.com/go-playground/validator/v10"
+	"github.com/soerjadi/stockist/internal/config"
 	"github.com/soerjadi/stockist/internal/model"
 	"github.com/soerjadi/stockist/internal/repository/user"
 )
@@ -17,5 +17,5 @@ type Usecase interface {
 
 type userUsecase struct {
 	repository user.Repository
-	validate   *validator.Validate
+	config     *config.Config
 }

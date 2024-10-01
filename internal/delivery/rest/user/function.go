@@ -8,6 +8,7 @@ import (
 	"github.com/soerjadi/stockist/internal/model"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
+	"github.com/soerjadi/stockist/internal/pkg/validator"
 )
 
 func (h Handler) register(w http.ResponseWriter, r *http.Request) (interface{}, error) {
@@ -20,6 +21,14 @@ func (h Handler) register(w http.ResponseWriter, r *http.Request) (interface{}, 
 			"err": err,
 		})
 		return nil, errors.New("fail to decode request body")
+	}
+
+	if err := validator.Validate(r.Context(), h.validate, req); err != nil {
+		log.Errorw("[delivery.rest.user.register] failed in validator", logger.KV{
+			"err": err,
+			"req": req,
+		})
+		return nil, err
 	}
 
 	user, err := h.usecase.RegisterUser(r.Context(), req)

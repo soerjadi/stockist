@@ -88,7 +88,7 @@ func (u userUsecase) Login(ctx context.Context, req model.UserLoginRequest) (str
 		return "", "", errors.New(constant.ERROR_PASSWORD_NOT_MATCH_EN)
 	}
 
-	accessToken, err := token.GenerateAccessToken(user.ID)
+	accessToken, err := token.GenerateAccessToken(user.ID, u.config.Secret.Token)
 	if err != nil {
 		log.Errorw("[usecase.user.Login] failed generate access token", logger.KV{
 			"err": err,
@@ -96,7 +96,7 @@ func (u userUsecase) Login(ctx context.Context, req model.UserLoginRequest) (str
 		return "", "", err
 	}
 
-	refreshToken, err := token.GenerateRefreshToken(user.ID)
+	refreshToken, err := token.GenerateRefreshToken(user.ID, u.config.Secret.Token)
 	if err != nil {
 		log.Errorw("[usecase.user.Login] failed generate refresh token", logger.KV{
 			"err": err,
