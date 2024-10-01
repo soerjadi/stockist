@@ -8,7 +8,6 @@ import (
 	"github.com/soerjadi/stockist/internal/model/constant"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
-	"github.com/soerjadi/stockist/internal/pkg/validator"
 )
 
 func (h *Handler) order(w http.ResponseWriter, r *http.Request) (interface{}, error) {
@@ -24,14 +23,14 @@ func (h *Handler) order(w http.ResponseWriter, r *http.Request) (interface{}, er
 		return nil, err
 	}
 
-	if err := validator.Validate(r.Context(), &h.validate, req); err != nil {
-		log.Errorw("[delivery.rest.order.order] failed in validator", logger.KV{
-			"err": err,
-			"req": req,
-		})
+	// if err := validator.Validate(r.Context(), &h.validate, req); err != nil {
+	// 	log.Errorw("[delivery.rest.order.order] failed in validator", logger.KV{
+	// 		"err": err,
+	// 		"req": req,
+	// 	})
 
-		return nil, err
-	}
+	// 	return nil, err
+	// }
 
 	var currentUserID int64
 	currentUserIDLog := r.Context().Value(constant.USER_ID_KEY_RESPONDENT)

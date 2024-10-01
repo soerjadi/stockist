@@ -27,7 +27,7 @@ const (
 	`
 
 	createOrderItem = `
-	INSERT INTO order_item (
+	INSERT INTO order_items (
 		order_id,
 		product_id,
 		amount,

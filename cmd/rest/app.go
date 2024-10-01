@@ -65,12 +65,9 @@ func main() {
 		Password: cfg.Redis.URL,
 	})
 
-	log.Infof("initialize redis %v", redisClient)
-
 	defer redisClient.Close()
 
 	handlers, err := initiateHandler(cfg, db, redisClient)
-	log.Info("sanoetuaosenut")
 	if err != nil {
 		log.Errorw("unable to initiate handler.", logger.KV{
 			"err": err,

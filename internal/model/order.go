@@ -18,8 +18,8 @@ type Order struct {
 
 type CreateOrderRequest struct {
 	UserID   int64                  `json:"-"`
-	StoreID  int64                  `json:"store_id"`
-	Products []ProductOrdersRequest `json:"products"`
+	StoreID  int64                  `json:"store_id" validate:"required"`
+	Products []ProductOrdersRequest `json:"products" validate:"required"`
 }
 
 func (CreateOrderRequest) ErrorMessages(name string) map[string]string {
@@ -27,12 +27,16 @@ func (CreateOrderRequest) ErrorMessages(name string) map[string]string {
 		"store_id": {
 			"required": "StoreID field is required",
 		},
+		"products": {
+			"reqeuired": "Products field is required",
+		},
 	}[name]
 }
 
 func (CreateOrderRequest) FieldName(name string) string {
 	return map[string]string{
-		"StoreID": "store_id",
+		"StoreID":  "store_id",
+		"Products": "products",
 	}[name]
 }
 

@@ -19,8 +19,6 @@ func (r orderRepository) CreateOrder(ctx context.Context, req model.Order) (mode
 		&orderModel,
 		req.UserID,
 		req.StoreID,
-		req.TotalPrice,
-		req.TotalAmount,
 		req.Status,
 	); err != nil {
 		log.Errorw("[repository.order.CreateOrder] failed save order", logger.KV{

@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/redis/go-redis/v9"
 	"github.com/soerjadi/stockist/internal/model"
 	"github.com/soerjadi/stockist/internal/pkg/log"
 	"github.com/soerjadi/stockist/internal/pkg/log/logger"
@@ -22,7 +21,7 @@ func (u orderUsecase) CreateOrder(ctx context.Context, req model.CreateOrderRequ
 	orderModel.Status = model.ORDER_STATUS_CREATED
 
 	// check stock from product item
-	for _, _product := range req.Products {
+	for idx, _product := range req.Products {
 		product, err := u.productRepo.GetByID(ctx, _product.ProductID)
 		if err != nil {
 			log.Errorw("[usecase.order.CreateOrder] product with id doesn't exists", logger.KV{})
@@ -33,6 +32,8 @@ func (u orderUsecase) CreateOrder(ctx context.Context, req model.CreateOrderRequ
 		if err = u.reserveStock(ctx, product, req.UserID, _product.Total); err != nil {
 			return model.Order{}, err
 		}
+
+		req.Products[idx].Price = product.Price
 	}
 
 	// placing an order
@@ -49,7 +50,7 @@ func (u orderUsecase) CreateOrder(ctx context.Context, req model.CreateOrderRequ
 				Amount:    product.Total,
 				Price:     product.Price,
 			}
-			err := u.repository.CreateOrderItem(ctx, item)
+			err := u.repository.CreateOrderItem(context.Background(), item)
 			if err != nil {
 				log.Errorw("[usecase.order.CreateOrder] failed save order item", logger.KV{
 					"err":     err,
@@ -58,6 +59,8 @@ func (u orderUsecase) CreateOrder(ctx context.Context, req model.CreateOrderRequ
 				})
 				return
 			}
+
+			log.Infof("successfully added order item %v", product)
 		}
 	}()
 
@@ -70,23 +73,23 @@ func (u orderUsecase) reserveStock(ctx context.Context, product model.Product, u
 	key := fmt.Sprintf("product-id-%d", product.ID)
 	userKey := fmt.Sprintf("product-%d-user-%d", product.ID, userID)
 	rsvStock, err := u.redis.Get(ctx, key).Result()
-	if err != redis.Nil {
+	if err != nil {
 		log.Errorw("[usecase.order.reserveStock] get reserve product stock error", logger.KV{
 			"err": err,
 			"key": key,
 		})
 
-		rsvStock = "0"
+		return fmt.Errorf("err get reserve stock for product id %d", product.ID)
 	}
 
 	rsvStockByUser, err := u.redis.Get(ctx, userKey).Result()
-	if err != redis.Nil {
+	if err != nil {
 		log.Errorw("[usecase.order.reserveStock] get reserve stock by user error", logger.KV{
 			"err": err,
-			"key": key,
+			"key": userKey,
 		})
 
-		rsvStockByUser = "0"
+		return fmt.Errorf("err get reserve user stock for product id %d", product.ID)
 
 	}
 
@@ -112,9 +115,9 @@ func (u orderUsecase) reserveStock(ctx context.Context, product model.Product, u
 		return fmt.Errorf("stock is not enough for product id %d", product.ID)
 	}
 
-	ttl := time.Duration(10) * time.Second
-	u.redis.SetNX(ctx, rsvStock, (rsvStockInt + totalReserve), ttl)
-	u.redis.SetNX(ctx, rsvStockByUser, (rsvStockByUserInt + totalReserve), ttl)
+	ttl := time.Duration(10) * time.Minute
+	u.redis.Set(ctx, key, (rsvStockInt + totalReserve), ttl)
+	u.redis.Set(ctx, userKey, (rsvStockByUserInt + totalReserve), ttl)
 
 	return nil
 
