@@ -6,6 +6,7 @@ type prepareQuery struct {
 	getByID       *sqlx.Stmt
 	getList       *sqlx.Stmt
 	createProduct *sqlx.Stmt
+	updateStock   *sqlx.Stmt
 }
 
 const (
@@ -69,5 +70,14 @@ const (
 		stock,
 		images,
 		created_at
+	`
+
+	updateStock = `
+	UPDATE 
+		products
+	SET
+		stock = $1
+	WHERE 
+		id = $2
 	`
 )

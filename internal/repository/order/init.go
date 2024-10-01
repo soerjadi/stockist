@@ -1,4 +1,4 @@
-package product
+package order
 
 import "github.com/jmoiron/sqlx"
 
@@ -8,22 +8,17 @@ func prepareQueries(db *sqlx.DB) (prepareQuery, error) {
 		err error
 	)
 
-	q.getByID, err = db.Preparex(getByID)
+	q.createOrder, err = db.Preparex(createOrder)
 	if err != nil {
 		return q, err
 	}
 
-	q.getList, err = db.Preparex(getList)
+	q.createOrderItem, err = db.Preparex(createOrderItem)
 	if err != nil {
 		return q, err
 	}
 
-	q.createProduct, err = db.Preparex(createProduct)
-	if err != nil {
-		return q, err
-	}
-
-	q.updateStock, err = db.Preparex(updateStock)
+	q.updateOrderStatus, err = db.Preparex(updateOrderStatus)
 	if err != nil {
 		return q, err
 	}
@@ -37,7 +32,7 @@ func GetRepository(db *sqlx.DB) (Repository, error) {
 		return nil, err
 	}
 
-	return &productRepository{
+	return &orderRepository{
 		query: query,
 	}, nil
 }

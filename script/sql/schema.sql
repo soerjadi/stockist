@@ -46,8 +46,6 @@ CREATE TABLE IF NOT EXISTS orders (
     id              BIGSERIAL PRIMARY KEY NOT NULL,
     user_id         BIGINT NOT NULL,
     store_id        BIGINT NOT NULL,
-    total_price     BIGINT NOT NULL,
-    total_amount    BIGINT NOT NULL,
     status          order_status NOT NULL,
     created_at      timestamp default current_timestamp,
     updated_at      timestamp,

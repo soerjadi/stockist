@@ -8,6 +8,7 @@ type Config struct {
 	Server   Server
 	Database DatabaseConfig
 	Secret   Secret
+	Redis    Redis
 }
 
 type Server struct {
@@ -20,6 +21,11 @@ type Server struct {
 
 type Secret struct {
 	Token string
+}
+
+type Redis struct {
+	URL      string
+	Password string
 }
 
 type DatabaseConfig struct {

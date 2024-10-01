@@ -8,12 +8,48 @@ import (
 type Order struct {
 	ID          int64        `db:"id"`
 	UserID      int64        `db:"user_id"`
-	ShopID      int64        `db:"shop_id"`
+	StoreID     int64        `db:"store_id"`
 	TotalPrice  int64        `db:"total_price"`
 	TotalAmount int64        `db:"total_amount"`
 	Status      string       `db:"status"`
 	CreatedAt   time.Time    `db:"created_at"`
 	UpdatedAt   sql.NullTime `db:"updated_at"`
+}
+
+type CreateOrderRequest struct {
+	UserID   int64                  `json:"-"`
+	StoreID  int64                  `json:"store_id" validate:"required"`
+	Products []ProductOrdersRequest `json:"products" validate:"required"`
+}
+
+func (CreateOrderRequest) ErrorMessages(name string) map[string]string {
+	return MapErrorRequest{
+		"store_id": {
+			"required": "StoreID field is required",
+		},
+		"products": {
+			"reqeuired": "Products field is required",
+		},
+	}[name]
+}
+
+func (CreateOrderRequest) FieldName(name string) string {
+	return map[string]string{
+		"StoreID":  "store_id",
+		"Products": "products",
+	}[name]
+}
+
+type ProductOrdersRequest struct {
+	ProductID int64 `json:"product_id"`
+	Total     int64 `json:"total"`
+	Price     int64 `json:"price"`
+}
+
+type OrderItemRequest struct {
+	ProductID int64 `json:"product_id"`
+	Amount    int64 `json:"amount"`
+	Price     int64 `json:"price"`
 }
 
 type OrderItem struct {
